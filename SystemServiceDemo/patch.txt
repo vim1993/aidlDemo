@@ -1,0 +1,53 @@
+diff --git a/base/services/java/com/android/server/SystemServer.java b/base/services/java/com/android/server/SystemServer.java
+index ea58cff..8949b4d 100755
+--- a/base/services/java/com/android/server/SystemServer.java
++++ b/base/services/java/com/android/server/SystemServer.java
+@@ -70,6 +70,8 @@ import com.android.server.usb.UsbService;
+ import com.android.server.wifi.WifiService;
+ import com.android.server.wm.WindowManagerService;
+ 
++import com.android.server.orange.GpioManagerService;
++
+ import com.android.qb.QbAndroidManagerService;
+ import com.hisilicon.karaoke.MicphoneService;
+ import com.hisilicon.karaoke.RTSoundEffectsService;
+@@ -167,6 +169,8 @@ class ServerThread {
+         ConsumerIrService consumerIr = null;
+         CameraObserver camera = null;
+ 
++               GpioManagerService gpiomanager = null;
++
+         // Create a handler thread just for the window manager to enjoy.
+         HandlerThread wmHandlerThread = new HandlerThread("WindowManager");
+         wmHandlerThread.start();
+@@ -906,6 +910,14 @@ class ServerThread {
+                     reportWtf("starting MediaRouterService", e);
+                 }
+             }
++
++                       try {
++                               Slog.d(TAG, "start gpiomanagerservice...");
++                               gpiomanager = new GpioManagerService(context);
++                               ServiceManager.addService("gpioOrange", gpiomanager);
++                       } catch(Throwable e) {
++                               Slog.d(TAG, "add gpiomanager failed");
++                       }
+         }
+ 
+         // Before things start rolling, be sure we have decided whether
+amtiptv@amtiptv-MS-7972:~/workspace/orange/3798MV100/frameworks/base$ 
+
+
+amtiptv@amtiptv-MS-7972:~/workspace/orange/3798MV100/frameworks/base$ git diff Android.mk
+diff --git a/base/Android.mk b/base/Android.mk
+index 6fec569..38ce8d2 100755
+--- a/base/Android.mk
++++ b/base/Android.mk
+@@ -280,6 +280,7 @@ LOCAL_SRC_FILES += \
+     core/java/android/os/display/IDisplayManager.aidl \
+     karaoke/java/com/hisilicon/karaoke/IMicphoneService.aidl \
+     karaoke/java/com/hisilicon/karaoke/IRTSoundEffectsService.aidl \
++    core/java/android/os/IGpioManager.aidl \
+ 
+ # FRAMEWORKS_BASE_JAVA_SRC_DIRS comes from build/core/pathmap.mk
+ LOCAL_AIDL_INCLUDES += $(FRAMEWORKS_BASE_JAVA_SRC_DIRS)
